@@ -1,9 +1,12 @@
 package com.oseasy.mmc.multiclient;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
+
+import java.util.List;
 
 /**
  * Created by admin on 17-7-28.
@@ -12,7 +15,7 @@ import android.util.Log;
 public class Core {
 
     public Context context;
-    public static final String TAG = "MultiClientClient";
+    public static final String TAG = "MultiClient";
     public static final String CONFIG_MEDIA_TEACHER_IP = "oemmdteacherip";
     public static final String CONFIG_MEDIA_STUDENT_IP = "oemmdstudentip";
     public static final String CONFIG_MEDIA_CLIENT_MAC = "oemmdclientmac";
@@ -52,17 +55,41 @@ public class Core {
         return result;
     }
 
+    public boolean  checkPackage(Context context,String packageName){
+        if (packageName == null || "".equals(packageName))
+            return  false;
+        ActivityManager am = (ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> list = am.getRunningAppProcesses();
+
+        if (list == null)
+            return  false;
+
+        for (ActivityManager.RunningAppProcessInfo info : list){
+            if (info.processName.equals(packageName)){
+                return true;
+            }
+        }
+
+        return  false;
+    }
+
     public void  StartFunc(String name,String ip,int port,int verityPort){
         Log.i(TAG,String.format("Excute Func:%s,Params:%s:%d",name,ip,port));
         switch (name){
             case "screen": {
-                Intent intent = new Intent();
-                intent.setAction("com.oseasy.mmc.multirender.OPEN");
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.putExtra("Host", ip);
-                intent.putExtra("Port", port);
-                intent.putExtra("VerityPort",verityPort);
-                context.startActivity(intent);
+                if (!checkPackage(context,"com.oseasy.mmc.multirender")){
+                    Intent intent = new Intent();
+                    intent.setAction("com.oseasy.mmc.multirender.OPEN");
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("Host", ip);
+                    intent.putExtra("Port", port);
+                    intent.putExtra("VerityPort",verityPort);
+                    context.startActivity(intent);
+                }
+                else {
+                    Intent intent = new Intent("com.oseasy.mmc.multirender.ON");
+                    context.sendBroadcast(intent);
+                }
                 break;
             }
             case "mac": {
@@ -104,18 +131,20 @@ public class Core {
         Log.i(TAG,String.format("Stop Func:%s",name));
         switch (name){
             case "screen": {
-                Intent intent = new Intent("com.oseasy.mmc.multirender.CLOSE");
+                Intent intent = new Intent("com.oseasy.mmc.multirender.OFF");
                 context.sendBroadcast(intent);
                 break;
             }
             case "mac": {
                 Intent intent = new Intent("com.oseasy.mmc.microaudiorender.CLOSE");
                 context.sendBroadcast(intent);
+                ShellUtil.exec("busybox pkill microaudiorender");
                 break;
             }
             case "audio":{
                 Intent intent = new Intent("com.oseasy.mmc.localaudiorender.CLOSE");
                 context.sendBroadcast(intent);
+                ShellUtil.exec("busybox pkill localaudiorender");
                 break;
             }
             case "techvideo":{
