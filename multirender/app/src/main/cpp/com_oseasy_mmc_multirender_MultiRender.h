@@ -22,6 +22,9 @@ JNIEXPORT jbyteArray JNICALL Java_com_oseasy_mmc_multirender_MultiRender_GetH264
 JNIEXPORT jshortArray JNICALL Java_com_oseasy_mmc_multirender_MultiRender_GetResolution
         (JNIEnv * env, jclass clazz);
 
+JNIEXPORT void JNICALL Java_com_oseasy_mmc_multirender_MultiRender_InsertInviadFrame
+        (JNIEnv * env, jclass );
+
 #ifdef __cplusplus
 }
 #endif

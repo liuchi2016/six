@@ -8,5 +8,8 @@ class   DataLogic
 public:
 	void    NotifyFromClientServerLib(ID id,notify_type type,std::string externs);
 	void	GetDataFromTeacher(ID,uint8_t* buf,int length);
+	void 	SetValue(std::string studentIp,std::string smac);
+	std::string _studentIp;
+	std::string _smac;
 };
 #endif

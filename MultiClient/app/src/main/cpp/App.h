@@ -4,8 +4,6 @@
 #include <jni.h>
 #include "tcpclient.h"
 #include "DataLogic.h"
-#include "logger.h"
-
 
 inline  char* jstringTostr(JNIEnv* env,jstring jstr)
 {
@@ -17,7 +15,7 @@ inline  char* jstringTostr(JNIEnv* env,jstring jstr)
 	jbyteArray byteArray=(jbyteArray)env->CallObjectMethod(jstr,methodId,encode);
 	jsize strLen  =env->GetArrayLength(byteArray);
 	jbyte *jBuf = env->GetByteArrayElements(byteArray,JNI_FALSE);
-	if (!jBuf){
+	if (jBuf){
 		pStr = (char*)malloc(strLen+1);
 		if (!pStr){
 			return 0;
@@ -32,56 +30,30 @@ inline  char* jstringTostr(JNIEnv* env,jstring jstr)
 	return pStr;
 }
 
-inline  jstring strTojstring(JNIEnv* env, const char* str){
-	jclass strClass = env->FindClass("java/lang/String");
-	jmethodID methodID = env->GetMethodID(strClass,"<init>","([BLjava/lang/String;)V");
-	jbyteArray bytes = env->NewByteArray(strlen(str));
-	env->SetByteArrayRegion(bytes,0,strlen(str),(jbyte*)str);
-	jstring encoding = env->NewStringUTF("utf-8");
-	jstring result = (jstring)env->NewObject(strClass,methodID,bytes,encoding);
-    env->DeleteLocalRef(encoding);
-    env->DeleteLocalRef(bytes);
-    env->DeleteLocalRef(strClass);
-    return  result;
-}
-
-
-
 class  CallerFromJava{
-public:
-	jmethodID getConfig;
-	jmethodID stopFunc;
-	jmethodID startFunc;
-	jmethodID set;
-	JNIEnv*   env;
-	jobject   obj;
+
 public:
 	void Stop(std::string name) {
-		jstring j_name = strTojstring(env,name.c_str());
-		env->CallVoidMethod(obj,stopFunc,j_name);
-        env->DeleteLocalRef(j_name);
+		char  intent[1024] = {0};
+		sprintf(intent,"am startservice -n com.oseasy.mmc.multiclient/.MultiClient -a com.oseasy.mmc.multiclient.STOPFUNC --es type %s",name.c_str());
+		system(intent);
 	}
-	void Start(std::string name,std::string ip,int port, int verityPort) {
-		jstring j_name = strTojstring(env,name.c_str());
-		jstring j_ip = strTojstring(env,ip.c_str());
-		env->CallVoidMethod(obj,startFunc,j_name,j_ip,port,verityPort);
-        env->DeleteLocalRef(j_name);
-        env->DeleteLocalRef(j_ip);
+	void Start(std::string name,std::string ip,int port, int verityPort){
+		char  intent[1024] = {0};
+		sprintf(intent,"am startservice -n com.oseasy.mmc.multiclient/.MultiClient -a com.oseasy.mmc.multiclient.OPENFUNC --es type %s --es host %s --ei port %d --ei verityPort %d",name.c_str(),ip.c_str(),port,verityPort);
+		system(intent);
 	}
 	void Set(std::string name, bool value) {
-		jstring j_name = strTojstring(env,name.c_str());
-		env->CallVoidMethod(obj,set,j_name,value);
-        env->DeleteLocalRef(j_name);
+		char  intent[1024] = {0};
+		sprintf(intent,"am startservice -n com.oseasy.mmc.multiclient/.MultiClient -a com.oseasy.mmc.multiclient.SETFUNC --es type %s --ei value %d",name.c_str(),(int)value);
+		system(intent);
 	}
 
-	std::string    GetConfig(std::string type){
-		jstring j_type = strTojstring(env,type.c_str());
-		jstring result = (jstring)env->CallObjectMethod(obj,getConfig,j_type);
-		std::string value = jstringTostr(env,result);
-        env->DeleteLocalRef(j_type);
-        env->DeleteLocalRef(result);
-        return  value;
-	}
+    void Log(std::string message){
+        char  intent[1024] = {0};
+        sprintf(intent,"am startservice -n com.oseasy.mmc.multiclient/.MultiClient -a com.oseasy.mmc.multiclient.LOG --es message %s",message.c_str());
+        system(intent);
+    }
 };
 
 class App
@@ -90,8 +62,11 @@ private:
 	tcpclient		client;
 	DataLogic		logic;
 	CallerFromJava  java;
+	std::string 	_teachetIp;
+	std::string 	_studentIp;
+	std::string 	_smac;
 public:
-	App();
+	App(std::string teacherIp,std::string studentIp,std::string smac);
 	~App();
 	DataLogic&  Logic();
 	tcpclient&  GetTcpClient();

@@ -5,17 +5,20 @@
 
 #define   PerSendBufferBytes   8192
 
+
+void tcpclient::SetRemoteIp(std::string host){
+    this->host = host;
+}
+
 bool tcpclient::_connect() {
 
-	std::string host = GetApp()->Java().GetConfig("connect");
-
-	if (host.empty()) {
+	if (this->host.empty()) {
 		return  false;
 	}
 
 	if (!bConnected)
 	{
-		id.ip = host;
+		id.ip = this->host;
 		sockaddr_in  addr;
 		memset(&addr,0,sizeof(addr));
 		addr.sin_family = AF_INET;

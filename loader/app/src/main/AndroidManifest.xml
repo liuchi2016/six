@@ -3,25 +3,31 @@
     package="com.oseasy.mmc.loader">
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-
+        android:label="@string/app_name">
         <service
-            android:name=".Loader"
+            android:name="com.oseasy.mmc.loader.Loader"
             android:enabled="true"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="com.oseasy.mmc.multiclient.action.CORE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </service>
 
+        <receiver
+            android:name=".AutoReciver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

@@ -3,24 +3,28 @@
     package="com.oseasy.mmc.multiclient">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
         android:launchMode="singleInstance"
         android:theme="@style/AppTheme">
         <service
             android:name=".MultiClient"
+            android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.oseasy.mmc.multiclient.action.COREOTHER" />
-
+                <action android:name="com.oseasy.mmc.multiclient.OPENFUNC" />
+                <action android:name="com.oseasy.mmc.multiclient.STOPFUNC" />
+                <action android:name="com.oseasy.mmc.multiclient.SETFUNC" />
+                <action android:name="com.oseasy.mmc.multiclient.LOG" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </service>
+
     </application>
 
 </manifest>

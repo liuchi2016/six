@@ -11,6 +11,7 @@
 class tcpclient
 {
 public:
+	void SetRemoteIp(std::string host);
 	void Run(short port);
 	void Send(uint8_t* buf,int length);
 private:
@@ -25,6 +26,7 @@ private:
 	short     port;
 	bool      bConnected;
 	SOCKET    m_socket;
+	std::string  host;
 };
 
 #endif

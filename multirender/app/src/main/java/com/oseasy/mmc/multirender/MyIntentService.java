@@ -1,42 +1,37 @@
 package com.oseasy.mmc.multirender;
-
-import android.app.IntentService;
+import android.app.Service;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.MediaCodec;
+import android.os.IBinder;
 
-import java.nio.ByteBuffer;
 
-public class MyIntentService extends IntentService {
+public class MyIntentService extends Service {
     MyReceiver     myReceiver;
 
     public MyIntentService() {
-        super("MyIntentService");
+
     }
 
     @Override
-    protected void onHandleIntent(Intent intent) {
+    public IBinder onBind(Intent intent){
+        return  null;
+    }
+
+
+    @Override
+    public int onStartCommand(Intent intent,int flags,int startId){
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("com.oseasy.mmc.multirender.CLOSE");
+        intentFilter.addAction("com.oseasy.mmc.multirender.OFF");
+        intentFilter.addAction("com.oseasy.mmc.multirender.ON");
         intentFilter.addAction("com.oseasy.mmc.multirender.FULLSCREEN");
         intentFilter.addAction("com.oseasy.mmc.multirender.WINDOW");
         myReceiver = new MyReceiver();
         registerReceiver(myReceiver,intentFilter);
-        ByteBuffer[] inputBuffers = MainActivity.videoView.mCodec.getInputBuffers();
-        MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
-        while (true) {
-            int inIndex = MainActivity.videoView.mCodec.dequeueInputBuffer(-1);
-            if (inIndex >= 0) {
-                ByteBuffer byteBuffer = inputBuffers[inIndex];
-                byteBuffer.clear();
-                byte[] streamBuffer = MultiRender.GetH264Frame();
-                byteBuffer.put(streamBuffer, 0, streamBuffer.length);
-                MainActivity.videoView.mCodec.queueInputBuffer(inIndex, 0, streamBuffer.length, 0, 0);
-            }
-            int outIndex = MainActivity.videoView.mCodec.dequeueOutputBuffer(info, 0);
-            if (outIndex >= 0)
-                MainActivity.videoView.mCodec.releaseOutputBuffer(outIndex,true);
-        }
+        return START_STICKY;
+    }
+
+    public void OnCreate(){
+        super.onCreate();
     }
 
     @Override
@@ -44,5 +39,4 @@ public class MyIntentService extends IntentService {
         super.onDestroy();
         unregisterReceiver(myReceiver);
     }
-
 }

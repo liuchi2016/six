@@ -3,20 +3,19 @@
 
 
 #include "App.h"
-#include "com_oseasy_mmc_multiclient_CORE.h"
-#include "logger.h"
+#include "com_oseasy_mmc_multiclient_MultiClient.h"
 
 //net thread running
-JNIEXPORT void JNICALL Java_com_oseasy_mmc_multiclient_Core_Start
-        (JNIEnv * env, jobject obj)
+JNIEXPORT void JNICALL Java_com_oseasy_mmc_multiclient_MultiClient_Start
+        (JNIEnv * env, jobject obj,jstring teacherIp,jstring studentIp,jstring mac)
 {
-    App app;
-    jclass jni = env->GetObjectClass(obj);
-    app.Java().getConfig = env->GetMethodID(jni,"GetConfig","(Ljava/lang/String;)Ljava/lang/String;");
-    app.Java().startFunc = env->GetMethodID(jni,"StartFunc","(Ljava/lang/String;Ljava/lang/String;II)V");
-    app.Java().stopFunc = env->GetMethodID(jni,"StopFunc","(Ljava/lang/String;)V");
-    app.Java().set = env->GetMethodID(jni,"Set","(Ljava/lang/String;Z)V");
-    app.Java().obj = obj;
-    app.Java().env = env;
+    std::string  _teacherIp = jstringTostr(env,teacherIp);
+
+    std::string  _studentIp = jstringTostr(env,studentIp);
+
+    std::string  _mac = jstringTostr(env,mac);
+
+    App app(_teacherIp,_studentIp,_mac);
+
     app.Run();
 }

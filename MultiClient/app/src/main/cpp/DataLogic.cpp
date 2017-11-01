@@ -10,7 +10,7 @@ void DataLogic::NotifyFromClientServerLib(ID id,notify_type type,std::string ext
 {
 	if (type  == disconnect)
 	{
-        LOGI("disconnected with %s",externs.c_str());
+		GetApp()->Java().Log("disconnected");
 		GetApp()->Java().Stop("screen");
         GetApp()->Java().Stop("mac");
         GetApp()->Java().Stop("audio");
@@ -19,18 +19,16 @@ void DataLogic::NotifyFromClientServerLib(ID id,notify_type type,std::string ext
 
 	else if (type == connected)
 	{
-        LOGI("connected to %s",externs.c_str());
+        GetApp()->Java().Log("connected");
         Cache<1024>  cache;
         Header  header;
         header.id  = MAC;
         header.operation  = 0;
         header.type    = 0;
         std::string sdata  = "/";
-        std::string sMac = GetApp()->Java().GetConfig("mac");
-        std::string sfilter = GetApp()->Java().GetConfig("filter");
         ParseWrapper::IntegrateA(externs,sdata);
-        ParseWrapper::IntegrateA(sMac,sdata);
-        ParseWrapper::IntegrateA(sfilter,sdata);
+        ParseWrapper::IntegrateA(_smac,sdata);
+        ParseWrapper::IntegrateA(_studentIp,sdata);
         header.externeds  = sdata.size();
         cache.write(header);
         cache.write((uint8_t*)sdata.c_str(),sdata.size());
@@ -50,7 +48,6 @@ void DataLogic::GetDataFromTeacher(ID,uint8_t* buf,int length)
 		{
 			char smultiip[128] = {0};
 			memcpy(smultiip,buf + sizeof(header),header.externeds);
-            LOGV("%s",smultiip);
 			std::string ip = ParseWrapper::ParseA(smultiip,0);
 			short  port = boost::lexical_cast<short>(ParseWrapper::ParseA(smultiip,1));
             short  udpVerityPort = boost::lexical_cast<short>(ParseWrapper::ParseA(smultiip,2));
@@ -123,4 +120,9 @@ void DataLogic::GetDataFromTeacher(ID,uint8_t* buf,int length)
             GetApp()->Java().Stop("screen");
 		}
 	}
+}
+
+void DataLogic::SetValue(std::string studentIp,std::string smac){
+	this->_studentIp = studentIp;
+	this->_smac = smac;
 }

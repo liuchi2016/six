@@ -14,4 +14,6 @@ public class MultiRender {
     public static native byte[] GetH264Frame();
 
     public static native short[] GetResolution();
+
+    public static native void InsertInviadFrame();
 }

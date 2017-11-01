@@ -17,7 +17,7 @@ char* jstringTostr(JNIEnv* env,jstring jstr)
     jbyteArray byteArray=(jbyteArray)env->CallObjectMethod(jstr,methodId,encode);
     jsize strLen  =env->GetArrayLength(byteArray);
     jbyte *jBuf = env->GetByteArrayElements(byteArray,JNI_FALSE);
-    if (!jBuf){
+    if (jBuf != 0){
         pStr = (char*)malloc(strLen+1);
         if (!pStr){
             return 0;
@@ -68,3 +68,12 @@ JNIEXPORT jshortArray JNICALL Java_com_oseasy_mmc_multirender_MultiRender_GetRes
     env->SetShortArrayRegion(buf, 0, 2, info);
     return buf;
 }
+
+
+JNIEXPORT void JNICALL Java_com_oseasy_mmc_multirender_MultiRender_InsertInviadFrame
+        (JNIEnv * env, jclass clazz)
+{
+    uint8_t * ptrInViadFrame = new uint8_t[4];
+    udpImageUnpacker.queues.Push(new UdpImageUnpacker::BufferCls(ptrInViadFrame,4));
+    delete[] ptrInViadFrame;
+ }

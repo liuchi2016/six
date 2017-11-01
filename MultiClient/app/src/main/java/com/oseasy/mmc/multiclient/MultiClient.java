@@ -1,11 +1,16 @@
 package com.oseasy.mmc.multiclient;
+import android.app.ActivityManager;
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -19,7 +24,20 @@ import java.util.TimerTask;
 
 public class MultiClient extends Service {
 
-    private static final String TAG = "MultiClient";
+    public static final String TAG = "MultiClient";
+    public static final String START = "com.oseasy.mmc.multiclient.action.COREOTHER";
+    public static final String OPENFUNC = "com.oseasy.mmc.multiclient.OPENFUNC";
+    public static final String STOPFUNC = "com.oseasy.mmc.multiclient.STOPFUNC";
+    public static final String SETFUNC = "com.oseasy.mmc.multiclient.SETFUNC";
+    public final static String SCENE = "com.oe.VideoView.scene";
+    public final static String SCENE_VIDEO_BROADCAST= "VideoBroadcast";
+    public final static String ACTION_PLAYER_QUIT = "com.oe.videoplayer.QUIT";
+    public final static String LOG = "com.oseasy.mmc.multiclient.LOG";
+    public boolean firstOpen = true;
+
+    static {
+        System.loadLibrary("Core");
+    }
 
     @Override
     public IBinder onBind(Intent intent){
@@ -28,24 +46,164 @@ public class MultiClient extends Service {
 
     @Override
     public int onStartCommand(Intent intent,int flags,int startId){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Core core = new Core(getApplicationContext());
-                core.Run();
-            }
-        }).start();
-        return START_STICKY;
+        String  actionType = intent.getAction();
+        LogToFile.v(TAG,String.format("action:%s",actionType));
+        if (actionType.equals(START)){
+            Bundle bundle = intent.getExtras();
+            final String teacherIp = bundle.getString("teacher");
+            final String filterIp = bundle.getString("filter");
+            final String mac = bundle.getString("mac");
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Start(teacherIp,filterIp,mac);
+                }
+            }).start();
+        }else if (actionType.equals(STOPFUNC)){
+            Bundle bundle = intent.getExtras();
+            final String type = bundle.getString("type");
+            StopFunc(type);
+        }
+        else  if (actionType.equals(SETFUNC)){
+            Bundle bundle = intent.getExtras();
+            final String type = bundle.getString("type");
+            final int value = bundle.getInt("value");
+            boolean ret = (value == 1) ? true : false;
+            Set(type,ret);
+
+        }else if (actionType.equals(OPENFUNC)){
+            Bundle bundle = intent.getExtras();
+            final String name = bundle.getString("type");
+            final String host = bundle.getString("host");
+            final int port = bundle.getInt("port");
+            final int verityPort = bundle.getInt("verityPort");
+            StartFunc(name,host,port,verityPort);
+        }else if (actionType.equals(LOG)){
+            Bundle bundle = intent.getExtras();
+            final String message = bundle.getString("message");
+            LogToFile.v(TAG,message);
+        }
+        return START_NOT_STICKY;
     }
 
-    public void OnCreate(){
-        Log.v(TAG,"Service created");
+    @Override
+    public void onCreate(){
+        LogToFile.init(getApplicationContext(),TAG);
         super.onCreate();
     }
 
     @Override
     public void onDestroy(){
+        LogToFile.v(TAG,"MultiClient destroy");
         super.onDestroy();
-        Log.v(TAG,"on destroy");
     }
+
+    public void  StartFunc(String name,String ip,int port,int verityPort){
+        LogToFile.v(TAG,String.format("Excute Func:%s,Params:%s:%d",name,ip,port));
+        switch (name){
+            case "screen": {
+                if (firstOpen){
+                    Intent intent = new Intent();
+                    intent.setAction("com.oseasy.mmc.multirender.OPEN");
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("Host", ip);
+                    intent.putExtra("Port", port);
+                    intent.putExtra("VerityPort",verityPort);
+                    startActivity(intent);
+                    firstOpen = false;
+                }
+                else {
+                        Intent intentFullScreen = new Intent("com.oseasy.mmc.multirender.FULLSCREEN");
+                        sendBroadcast(intentFullScreen);
+                        Intent intentOn = new Intent("com.oseasy.mmc.multirender.ON");
+                        sendBroadcast(intentOn);
+                }
+                break;
+            }
+            case "mac": {
+                Intent intent = new Intent();
+                intent.setAction("com.oseasy.mmc.microaudiorender.OPEN");
+                intent.setPackage("com.oseasy.mmc.microaudiorender");
+                intent.putExtra("Host", ip);
+                intent.putExtra("Port", port);
+                intent.putExtra("VerityPort",verityPort);
+                startService(intent);
+                break;
+            }
+            case "audio":{
+                Intent intent = new Intent();
+                intent.setAction("com.oseasy.mmc.localaudiorender.OPEN");
+                intent.setPackage("com.oseasy.mmc.localaudiorender");
+                intent.putExtra("Host", ip);
+                intent.putExtra("Port", port);
+                intent.putExtra("VerityPort",verityPort);
+                startService(intent);
+                break;
+            }
+            case "techvideo":{
+                String uri = String.format("udp://@%s:%d",ip,port);
+                Intent intent = new Intent("com.oe.videoplayer.PLAY", Uri.parse(uri));
+                //是否全屏：不使用此参数，默认全屏
+                intent.putExtra("com.oe.videoplayer.fullscreen", true);
+                intent.putExtra(SCENE, SCENE_VIDEO_BROADCAST);
+                intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    public void  StopFunc(String name){
+        LogToFile.v(TAG,String.format("Stop Func:%s",name));
+        switch (name){
+            case "screen": {
+                Intent intent = new Intent("com.oseasy.mmc.multirender.OFF");
+                sendBroadcast(intent);
+                break;
+            }
+            case "mac": {
+                Intent intent = new Intent("com.oseasy.mmc.microaudiorender.CLOSE");
+                sendBroadcast(intent);
+                ShellUtil.exec("busybox pkill microaudiorender");
+                break;
+            }
+            case "audio":{
+                Intent intent = new Intent("com.oseasy.mmc.localaudiorender.CLOSE");
+                sendBroadcast(intent);
+                ShellUtil.exec("busybox pkill localaudiorender");
+                break;
+            }
+            case "techvideo":{
+                Intent intent = new Intent();
+                intent.setAction(ACTION_PLAYER_QUIT);
+                sendBroadcast(intent);
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    public void Set(String name ,boolean value){
+        LogToFile.i(TAG,String.format("Set Value:%s=%b",name,value));
+        switch (name){
+            case "fullscreen":{
+                if (value){
+                    Intent intent = new Intent("com.oseasy.mmc.multirender.FULLSCREEN");
+                    sendBroadcast(intent);
+                }else {
+                    Intent intent = new Intent("com.oseasy.mmc.multirender.WINDOW");
+                    sendBroadcast(intent);
+                }
+                break;
+            }
+            default:
+                break;
+        }
+
+    }
+
+    public  native void Start(String teacherIp,String filterIp,String mac);
 }

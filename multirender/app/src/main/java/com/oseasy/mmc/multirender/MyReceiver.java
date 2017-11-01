@@ -18,14 +18,17 @@ public class MyReceiver extends BroadcastReceiver {
         // an Intent broadcast.
         String  actionType = intent.getAction().toString();
         Log.v(MainActivity.Tag,actionType);
-        if (actionType == "com.oseasy.mmc.multirender.CLOSE"){
+        if (actionType == "com.oseasy.mmc.multirender.OFF"){
             Log.v(Tag,"close MultiRender");
-            android.os.Process.killProcess(android.os.Process.myPid());
+            MainActivity.instance.Quit();
+           // android.os.Process.killProcess(android.os.Process.myPid());
         }else if (actionType == "com.oseasy.mmc.multirender.FULLSCREEN"){
             MainActivity.instance.SetFullScreen(true);
 
         }else if (actionType == "com.oseasy.mmc.multirender.WINDOW"){
             MainActivity.instance.SetFullScreen(false);
+        }else  if (actionType == "com.oseasy.mmc.multirender.ON"){
+            MainActivity.instance.Start();
         }
     }
 }

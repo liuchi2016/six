@@ -2,15 +2,10 @@ package com.oseasy.mmc.multirender;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.PixelFormat;
-import android.graphics.Point;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -20,8 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.LinearLayout;
-
 import java.lang.Thread;
 import java.nio.ByteBuffer;
 
@@ -39,6 +32,7 @@ public class MainActivity extends Activity {
     public static final String Tag = "MultiRender";
     static  public MainActivity instance;
     boolean  bWindow = false;
+    boolean  bEnable;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,6 +93,14 @@ public class MainActivity extends Activity {
                 showDesk();
             }
         }, 100);
+
+        Intent intent = new Intent(this,MyIntentService.class);
+
+        startService(intent);
+
+        bEnable = true;
+
+      //  videoView.StartHandler();
     }
 
     private void showDesk() {
@@ -106,9 +108,30 @@ public class MainActivity extends Activity {
         finish();
     }
 
-    private void closeDesk() {
-        mWindowManager.removeView(videoView);
-        finish();
+    public void Quit(){
+        if (bEnable){
+            videoView.bdecodeStop = true;
+            MultiRender.InsertInviadFrame();
+            try {
+                videoView.decodeThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (videoView.mCodec !=null) {
+                videoView.mCodec.stop();
+                videoView.mCodec = null;
+            }
+            videoView.setVisibility(View.GONE);
+            bEnable = false;
+        }
+    }
+
+    public void Start(){
+        if (!bEnable){
+            bEnable = true;
+            videoView.bdecodeStop = false;
+            videoView.setVisibility(View.VISIBLE);
+        }
     }
 
     public void SetFullScreen(boolean flag){
@@ -129,10 +152,6 @@ public class MainActivity extends Activity {
         }
     }
 
-
-    /**
-     * 设置WindowManager
-     */
     private void createWindowManager() {
         // 取得系统窗体
         mWindowManager = (WindowManager) getApplicationContext()
@@ -148,7 +167,6 @@ public class MainActivity extends Activity {
         mLayout.x = 0;
         mLayout.y = 0;
         bWindow = false;
-        Log.v("float","Created");
     }
 
     @Override
@@ -156,35 +174,56 @@ public class MainActivity extends Activity {
         super.onDestroy();
     }
 
-    public void StartDecodingServer(){
-        Log.v(Tag,"startDecodingServer");
-        Intent intent = new Intent(this,MyIntentService.class);
-        startService(intent);
-        Log.v(Tag,"startDecodingServer..");
-    }
-
     class MySurfaceView extends SurfaceView implements SurfaceHolder.Callback{
 
 
         private final static String MIME_TYPE = "video/avc";// H.264 Advanced Video
 
-        private int video_width;
+        public int video_width;
 
-        private int video_height;
+        public int video_height;
 
         public  MediaCodec     mCodec;
 
+        public  Thread   decodeThread;
 
-        private Point point = new Point();
+        public  boolean  bdecodeStop;
 
-        private boolean bDrag = false;
 
         public MySurfaceView(Context context){
             super(context);
 
-            Log.v("liuchi","comming to CameraPreView");
-
             getHolder().addCallback(this);
+
+            bdecodeStop = false;
+
+        }
+
+        public void Decode(){
+
+            try {
+                MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
+                ByteBuffer[] inputBuffers = mCodec.getInputBuffers();
+                while (!bdecodeStop) {
+                    int inIndex = mCodec.dequeueInputBuffer(0);
+                    if (inIndex >= 0) {
+                        ByteBuffer byteBuffer = inputBuffers[inIndex];
+                        byteBuffer.clear();
+                        byte[] streamBuffer = MultiRender.GetH264Frame();
+                        if (bdecodeStop)
+                            break;
+                        byteBuffer.put(streamBuffer, 0, streamBuffer.length);
+                        mCodec.queueInputBuffer(inIndex, 0, streamBuffer.length, 0, 0);
+                    }
+                    int outIndex = mCodec.dequeueOutputBuffer(info,1);
+                    if (outIndex >= 0) {
+                        mCodec.releaseOutputBuffer(outIndex, true);
+                    }
+                }
+            }
+            catch (Exception e){
+                Log.v("Error","exception");
+            }
 
         }
 
@@ -206,23 +245,29 @@ public class MainActivity extends Activity {
         }
 
 
+
         public void StartHandler(){
             new Handler().postDelayed(new Runnable(){
 
                 public void run() {
-                    //execute the task
                     short[] resolution = MultiRender.GetResolution();
-                    if (resolution[0] == 0 || resolution[1] ==0 )
-                        StartHandler();
-                    else {
+
+                    if (resolution[0] != 0 && resolution[1] != 0 ) {
                         video_width = resolution[0];
                         video_height = resolution[1];
                         InitDecoder();
-                        StartDecodingServer();
-
+                        decodeThread = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Decode();
+                            }
+                        });
+                        decodeThread.start();
                     }
+                    else
+                        StartHandler();
                 }
-            }, 100);
+            }, 10);
         }
 
         @Override
