@@ -3,6 +3,7 @@ import android.app.ActivityManager;
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -113,10 +114,15 @@ public class MultiClient extends Service {
                     firstOpen = false;
                 }
                 else {
-                        Intent intentFullScreen = new Intent("com.oseasy.mmc.multirender.FULLSCREEN");
-                        sendBroadcast(intentFullScreen);
-                        Intent intentOn = new Intent("com.oseasy.mmc.multirender.ON");
-                        sendBroadcast(intentOn);
+                    Intent intentFullScreen = new Intent();
+                    intentFullScreen.setComponent(new ComponentName("com.oseasy.mmc.multirender","com.oseasy.mmc.multirender.MyIntentService"));
+                    intentFullScreen.setAction("com.oseasy.mmc.multirender.FULLSCREEN");
+                    startService(intentFullScreen);
+
+                    Intent intent = new Intent();
+                    intent.setComponent(new ComponentName("com.oseasy.mmc.multirender","com.oseasy.mmc.multirender.MyIntentService"));
+                    intent.setAction("com.oseasy.mmc.multirender.ON");
+                    startService(intent);
                 }
                 break;
             }
@@ -159,8 +165,10 @@ public class MultiClient extends Service {
         LogToFile.v(TAG,String.format("Stop Func:%s",name));
         switch (name){
             case "screen": {
-                Intent intent = new Intent("com.oseasy.mmc.multirender.OFF");
-                sendBroadcast(intent);
+                Intent intent = new Intent();
+                intent.setComponent(new ComponentName("com.oseasy.mmc.multirender","com.oseasy.mmc.multirender.MyIntentService"));
+                intent.setAction("com.oseasy.mmc.multirender.OFF");
+                startService(intent);
                 break;
             }
             case "mac": {
@@ -191,11 +199,16 @@ public class MultiClient extends Service {
         switch (name){
             case "fullscreen":{
                 if (value){
-                    Intent intent = new Intent("com.oseasy.mmc.multirender.FULLSCREEN");
-                    sendBroadcast(intent);
+                    Intent intent = new Intent();
+                    intent.setComponent(new ComponentName("com.oseasy.mmc.multirender","com.oseasy.mmc.multirender.MyIntentService"));
+                    intent.setAction("com.oseasy.mmc.multirender.FULLSCREEN");
+                    startService(intent);
+
                 }else {
-                    Intent intent = new Intent("com.oseasy.mmc.multirender.WINDOW");
-                    sendBroadcast(intent);
+                    Intent intent = new Intent();
+                    intent.setComponent(new ComponentName("com.oseasy.mmc.multirender","com.oseasy.mmc.multirender.MyIntentService"));
+                    intent.setAction("com.oseasy.mmc.multirender.WINDOW");
+                    startService(intent);
                 }
                 break;
             }

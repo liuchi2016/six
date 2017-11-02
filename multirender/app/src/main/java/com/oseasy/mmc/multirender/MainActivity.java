@@ -1,5 +1,6 @@
 package com.oseasy.mmc.multirender;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
@@ -36,6 +37,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        LogToFile.init(getApplicationContext(),Tag);
         Bundle bundle = this.getIntent().getExtras();
         host = bundle.getString("Host");
         port = bundle.getInt("Port");
@@ -72,7 +74,7 @@ public class MainActivity extends Activity {
                 }
         });
 
-        Log.v(Tag,String.format("%s,%d",host,port));
+        LogToFile.v(Tag,String.format("%s,%d",host,port));
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -94,8 +96,13 @@ public class MainActivity extends Activity {
             }
         }, 100);
 
-        Intent intent = new Intent(this,MyIntentService.class);
+      /*  Intent intent = new Intent(this,MyIntentService.class);
 
+        startService(intent);*/
+
+        Intent intent = new Intent();
+        intent.setComponent(new ComponentName("com.oseasy.mmc.multirender","com.oseasy.mmc.multirender.MyIntentService"));
+        intent.setAction("com.oseasy.mmc.multirender.SERVER");
         startService(intent);
 
         bEnable = true;
@@ -222,7 +229,7 @@ public class MainActivity extends Activity {
                 }
             }
             catch (Exception e){
-                Log.v("Error","exception");
+                LogToFile.v("Error","exception");
             }
 
         }

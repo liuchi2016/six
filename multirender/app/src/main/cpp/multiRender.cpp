@@ -1,7 +1,6 @@
 #include "com_oseasy_mmc_multirender_MultiRender.h"
 #include "stdio.h"
 #include <string>
-#include "logger.h"
 #include "udpImageUnPacker.h"
 #include "Reciever.h"
 #include <boost/bind.hpp>
@@ -38,9 +37,15 @@ UdpImageUnpacker  udpImageUnpacker;
 JNIEXPORT void JNICALL Java_com_oseasy_mmc_multirender_MultiRender_NetStart
         (JNIEnv * env, jclass clazz,jstring host,jint port,jint VerityPort)
 {
-    std::string _host(jstringTostr(env,host));
-    udpReciever.Initialize(_host,port,VerityPort);
-    udpReciever.DataLoop(boost::bind(&UdpImageUnpacker::Flush,&udpImageUnpacker,_1,_2));
+    try {
+        std::string _host(jstringTostr(env,host));
+        udpReciever.Initialize(_host,port,VerityPort);
+        udpReciever.DataLoop(boost::bind(&UdpImageUnpacker::Flush,&udpImageUnpacker,_1,_2));
+    }catch (string_exception& e){
+        char  intent[1024] = {0};
+        sprintf(intent,"am startservice -n com.oseasy.mmc.multirender/.MyIntentService -a com.oseasy.mmc.multirender.LOG --es message %s",e.get().c_str());
+        system(intent);
+    }
 }
 
 JNIEXPORT jbyteArray JNICALL Java_com_oseasy_mmc_multirender_MultiRender_GetH264Frame
@@ -63,7 +68,6 @@ JNIEXPORT jshortArray JNICALL Java_com_oseasy_mmc_multirender_MultiRender_GetRes
     short info[2];
     info[0] = udpImageUnpacker.width;
     info[1] = udpImageUnpacker.height;
-    LOGE("width:%d,height:%d",info[0],info[1]);
     buf = env->NewShortArray(2);
     env->SetShortArrayRegion(buf, 0, 2, info);
     return buf;

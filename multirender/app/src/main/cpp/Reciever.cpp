@@ -1,7 +1,6 @@
 #include "Reciever.h"
 #include <boost/format.hpp>
 #include <common/WinError.h>
-#include "logger.h"
 #include <boost/thread.hpp>
 #include "UdpSender.h"
 

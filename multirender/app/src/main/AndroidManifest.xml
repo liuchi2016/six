@@ -4,6 +4,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -18,21 +20,23 @@
             <intent-filter>
                 <action android:name="com.oseasy.mmc.multirender.OPEN" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <!--
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-                -->
             </intent-filter>
         </activity>
 
-        <receiver
-            android:name=".MyReceiver"
-            android:enabled="true"
-            android:exported="true" />
-
         <service
             android:name=".MyIntentService"
-            android:exported="false"></service>
+            android:enabled="true"
+            android:launchMode="singleInstance"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.oseasy.mmc.multirender.SERVER" />
+                <action android:name="com.oseasy.mmc.multirender.OFF" />
+                <action android:name="com.oseasy.mmc.multirender.ON" />
+                <action android:name="com.oseasy.mmc.multirender.FULLSCREEN" />
+                <action android:name="com.oseasy.mmc.multirender.WINDOW" />
+                <action android:name="com.oseasy.mmc.multirender.LOG" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
