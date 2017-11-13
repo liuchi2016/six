@@ -1,7 +1,6 @@
 package com.oseasy.mmc.multiclient;
 import android.app.ActivityManager;
 import android.app.IntentService;
-import android.app.Notification;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -9,11 +8,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
-
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -34,8 +29,6 @@ public class MultiClient extends Service {
     public final static String SCENE_VIDEO_BROADCAST= "VideoBroadcast";
     public final static String ACTION_PLAYER_QUIT = "com.oe.videoplayer.QUIT";
     public final static String LOG = "com.oseasy.mmc.multiclient.LOG";
-    public boolean firstOpen = true;
-
     static {
         System.loadLibrary("Core");
     }
@@ -99,11 +92,30 @@ public class MultiClient extends Service {
         super.onDestroy();
     }
 
+
+    public boolean  checkPackage(Context context,String packageName){
+        if (packageName == null || "".equals(packageName))
+            return  false;
+        ActivityManager am = (ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> list = am.getRunningAppProcesses();
+
+        if (list == null)
+            return  false;
+
+        for (ActivityManager.RunningAppProcessInfo info : list){
+            if (info.processName.equals(packageName)){
+                return true;
+            }
+        }
+
+        return  false;
+    }
+
     public void  StartFunc(String name,String ip,int port,int verityPort){
         LogToFile.v(TAG,String.format("Excute Func:%s,Params:%s:%d",name,ip,port));
         switch (name){
             case "screen": {
-                if (firstOpen){
+                if (!checkPackage(getApplicationContext(), "com.oseasy.mmc.multirender")){
                     Intent intent = new Intent();
                     intent.setAction("com.oseasy.mmc.multirender.OPEN");
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -111,7 +123,6 @@ public class MultiClient extends Service {
                     intent.putExtra("Port", port);
                     intent.putExtra("VerityPort",verityPort);
                     startActivity(intent);
-                    firstOpen = false;
                 }
                 else {
                     Intent intentFullScreen = new Intent();
@@ -165,10 +176,12 @@ public class MultiClient extends Service {
         LogToFile.v(TAG,String.format("Stop Func:%s",name));
         switch (name){
             case "screen": {
-                Intent intent = new Intent();
-                intent.setComponent(new ComponentName("com.oseasy.mmc.multirender","com.oseasy.mmc.multirender.MyIntentService"));
-                intent.setAction("com.oseasy.mmc.multirender.OFF");
-                startService(intent);
+                if (checkPackage(getApplicationContext(), "com.oseasy.mmc.multirender")){
+                    Intent intent = new Intent();
+                    intent.setComponent(new ComponentName("com.oseasy.mmc.multirender","com.oseasy.mmc.multirender.MyIntentService"));
+                    intent.setAction("com.oseasy.mmc.multirender.OFF");
+                    startService(intent);
+                }
                 break;
             }
             case "mac": {
@@ -196,26 +209,27 @@ public class MultiClient extends Service {
 
     public void Set(String name ,boolean value){
         LogToFile.i(TAG,String.format("Set Value:%s=%b",name,value));
-        switch (name){
-            case "fullscreen":{
-                if (value){
-                    Intent intent = new Intent();
-                    intent.setComponent(new ComponentName("com.oseasy.mmc.multirender","com.oseasy.mmc.multirender.MyIntentService"));
-                    intent.setAction("com.oseasy.mmc.multirender.FULLSCREEN");
-                    startService(intent);
+        if (checkPackage(getApplicationContext(),"com.oseasy.mmc.multirender")){
+            switch (name){
+                case "fullscreen":{
+                    if (value){
+                        Intent intent = new Intent();
+                        intent.setComponent(new ComponentName("com.oseasy.mmc.multirender","com.oseasy.mmc.multirender.MyIntentService"));
+                        intent.setAction("com.oseasy.mmc.multirender.FULLSCREEN");
+                        startService(intent);
 
-                }else {
-                    Intent intent = new Intent();
-                    intent.setComponent(new ComponentName("com.oseasy.mmc.multirender","com.oseasy.mmc.multirender.MyIntentService"));
-                    intent.setAction("com.oseasy.mmc.multirender.WINDOW");
-                    startService(intent);
+                    }else {
+                        Intent intent = new Intent();
+                        intent.setComponent(new ComponentName("com.oseasy.mmc.multirender","com.oseasy.mmc.multirender.MyIntentService"));
+                        intent.setAction("com.oseasy.mmc.multirender.WINDOW");
+                        startService(intent);
+                    }
+                    break;
                 }
-                break;
+                default:
+                    break;
             }
-            default:
-                break;
         }
-
     }
 
     public  native void Start(String teacherIp,String filterIp,String mac);

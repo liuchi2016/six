@@ -16,4 +16,6 @@ public class MultiRender {
     public static native short[] GetResolution();
 
     public static native void InsertInviadFrame();
+
+    public static native void NetPause(int value);
 }

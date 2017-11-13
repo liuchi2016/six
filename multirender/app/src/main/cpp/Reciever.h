@@ -18,6 +18,7 @@ public:
 	void UnInitialize();
 	void Initialize(std::string remoteIp,short remotPort, short VerityPort);
 	void DataLoop(CallBackType _call);
+	void SetState(int state);
 private:
 	bool IsMultiCastIp(std::string);
 	void Create();
@@ -28,6 +29,7 @@ private:
 	std::string		remoteIp;
 	short			remotPort;
 	short 			verityPort;
+	int 			state;
 };
 
 

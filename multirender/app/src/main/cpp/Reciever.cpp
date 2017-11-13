@@ -16,6 +16,7 @@ void   Reciever::Initialize(std::string remoteIp,short remotPort, short VerityPo
 	this->remotPort = remotPort;
     this->verityPort = VerityPort;
 	m_socket = INVALID_SOCKET;
+	state = 0;
 	Create();
 }
 
@@ -67,6 +68,11 @@ void Reciever::Verfity(std::string remote, short port){
 }
 
 
+void Reciever::SetState(int state){
+	this->state = state;
+}
+
+
 void   Reciever::DataLoop(CallBackType _call)
 {
 	char data[1472] = {0};
@@ -78,7 +84,9 @@ void   Reciever::DataLoop(CallBackType _call)
 				THROWLASTERROR("recvfrom");
 			}
 			else{
-				_call((uint8_t*)data,rbytes);
+				if(state == 0){
+					_call((uint8_t*)data,rbytes);
+				}
 			}
 		}
 }

@@ -80,4 +80,11 @@ JNIEXPORT void JNICALL Java_com_oseasy_mmc_multirender_MultiRender_InsertInviadF
     uint8_t * ptrInViadFrame = new uint8_t[4];
     udpImageUnpacker.queues.Push(new UdpImageUnpacker::BufferCls(ptrInViadFrame,4));
     delete[] ptrInViadFrame;
- }
+}
+
+
+JNIEXPORT void JNICALL Java_com_oseasy_mmc_multirender_MultiRender_NetPause
+        (JNIEnv * env, jclass clazz,jint value)
+{
+    udpReciever.SetState(value);
+}

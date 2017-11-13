@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.4.1)
 # You can define multiple libraries, and CMake builds it for you.
 # Gradle automatically packages shared libraries with your APK.
 
-include_directories(D:/androidRedirection/third-party/boost)
+include_directories(D:/six/third-party/boost)
 
 include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include)
 
@@ -33,14 +33,14 @@ add_library(boost_system
             IMPORTED)
 set_target_properties(boost_system
                       PROPERTIES IMPORTED_LOCATION
-                     D:/androidRedirection/third-party/boost/lib/libboost_system.a)
+                     D:/six/third-party/boost/lib/libboost_system.a)
 
 add_library(boost_thread
             STATIC
             IMPORTED)
 set_target_properties(boost_thread
                       PROPERTIES IMPORTED_LOCATION
-                      D:/androidRedirection/third-party/boost/lib/libboost_thread.a)
+                      D:/six/third-party/boost/lib/libboost_thread.a)
 
 
 # Specifies libraries CMake should link to your target library. You

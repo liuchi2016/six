@@ -25,6 +25,9 @@ JNIEXPORT jshortArray JNICALL Java_com_oseasy_mmc_multirender_MultiRender_GetRes
 JNIEXPORT void JNICALL Java_com_oseasy_mmc_multirender_MultiRender_InsertInviadFrame
         (JNIEnv * env, jclass );
 
+JNIEXPORT void JNICALL Java_com_oseasy_mmc_multirender_MultiRender_NetPause
+        (JNIEnv * env, jclass,jint);
+
 #ifdef __cplusplus
 }
 #endif

@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
+import android.net.Network;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -130,6 +131,7 @@ public class MainActivity extends Activity {
             }
             videoView.setVisibility(View.GONE);
             bEnable = false;
+            MultiRender.NetPause(1);
         }
     }
 
@@ -138,6 +140,7 @@ public class MainActivity extends Activity {
             bEnable = true;
             videoView.bdecodeStop = false;
             videoView.setVisibility(View.VISIBLE);
+            MultiRender.NetPause(0);
         }
     }
 
