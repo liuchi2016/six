@@ -40,6 +40,9 @@ public class MyIntentService extends Service {
             Bundle bundle = intent.getExtras();
             final String message = bundle.getString("message");
             LogToFile.v(TAG,message);
+        }else  if (intent.getAction().equals("com.oseasy.mmc.multirender.CLOSE")){
+            LogToFile.v(TAG,"Close BroadCast");
+            android.os.Process.killProcess(android.os.Process.myPid());
         }
         return START_NOT_STICKY;
     }

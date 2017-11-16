@@ -102,7 +102,6 @@ public class Loader extends Service {
                         }
 
                         while (true){
-                     //       LogToFile.v(TAG,"Starting...");
                             Context context = getApplicationContext();
                             String connectIp = GetConfig(context,"connect");
                             String filterIp = GetConfig(context,"filter");
@@ -110,29 +109,17 @@ public class Loader extends Service {
                             if (!connectIp.isEmpty()
                                     && !filterIp.isEmpty()
                                     && !mac.isEmpty()) {
-                                if (OemUtil.isOemTongFang()){
-                                    if (!checkPackage(context, "com.oseasy.mmc.multiclientyh")) {
+                                if (!checkPackage(context, "com.oseasy.mmc.multiclient")) {
                                         Intent activity = new Intent();
-                                        activity.putExtra("teacher", connectIp);
-                                        activity.putExtra("filter", filterIp);
-                                        activity.putExtra("mac",mac);
-                                        activity.setAction("com.oseasy.mmc.multiclientyh.action.COREOTHER");
-                                        startService(activity);
-                                        LogToFile.v(TAG,String.format("type:yh,teacher:%s,filter:%s,mac:%s",connectIp,filterIp,mac));
-                                    }
-                                }else {
-                                    if (!checkPackage(context, "com.oseasy.mmc.multiclient")) {
-                                        Intent activity = new Intent();
-                                        activity.putExtra("teacher", connectIp);
-                                        activity.putExtra("filter", filterIp);
-                                        activity.putExtra("mac",mac);
-                                        activity.setAction("com.oseasy.mmc.multiclient.action.COREOTHER");
-                                        startService(activity);
-                                        LogToFile.v(TAG,String.format("type:normal,teacher:%s,filter:%s,mac:%s",connectIp,filterIp,mac));
-                                    }
+                                    activity.putExtra("teacher", connectIp);
+                                    activity.putExtra("filter", filterIp);
+                                    activity.putExtra("mac",mac);
+                                    activity.putExtra("type",OemUtil.isOemTongFang());
+                                    activity.setAction("com.oseasy.mmc.multiclient.action.COREOTHER");
+                                    startService(activity);
+                                    LogToFile.v(TAG,String.format("teacher:%s,filter:%s,mac:%s",connectIp,filterIp,mac));
                                 }
                             }
-
                             try {
                                 Thread.sleep(5000);
                             } catch (InterruptedException e) {

@@ -35,6 +35,7 @@
                 <action android:name="com.oseasy.mmc.multirender.FULLSCREEN" />
                 <action android:name="com.oseasy.mmc.multirender.WINDOW" />
                 <action android:name="com.oseasy.mmc.multirender.LOG" />
+                <action android:name="com.oseasy.mmc.multirender.CLOSE" />
             </intent-filter>
         </service>
     </application>

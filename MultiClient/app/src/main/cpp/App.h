@@ -33,25 +33,26 @@ inline  char* jstringTostr(JNIEnv* env,jstring jstr)
 class  CallerFromJava{
 
 public:
-	void Stop(std::string name) {
-		char  intent[1024] = {0};
-		sprintf(intent,"am startservice -n com.oseasy.mmc.multiclient/.MultiClient -a com.oseasy.mmc.multiclient.STOPFUNC --es type %s",name.c_str());
-		system(intent);
-	}
-	void Start(std::string name,std::string ip,int port, int verityPort){
-		char  intent[1024] = {0};
-		sprintf(intent,"am startservice -n com.oseasy.mmc.multiclient/.MultiClient -a com.oseasy.mmc.multiclient.OPENFUNC --es type %s --es host %s --ei port %d --ei verityPort %d",name.c_str(),ip.c_str(),port,verityPort);
-		system(intent);
-	}
-	void Set(std::string name, bool value) {
-		char  intent[1024] = {0};
-		sprintf(intent,"am startservice -n com.oseasy.mmc.multiclient/.MultiClient -a com.oseasy.mmc.multiclient.SETFUNC --es type %s --ei value %d",name.c_str(),(int)value);
-		system(intent);
-	}
 
-    void Log(std::string message){
+    static  void Stop(std::string name) {
         char  intent[1024] = {0};
-        sprintf(intent,"am startservice -n com.oseasy.mmc.multiclient/.MultiClient -a com.oseasy.mmc.multiclient.LOG --es message %s",message.c_str());
+        sprintf(intent,"su -c \"am startservice -n com.oseasy.mmc.multiclient/.MultiClient -a com.oseasy.mmc.multiclient.STOPFUNC --es type %s\"",name.c_str());
+        system(intent);
+    }
+    static void Start(std::string name,std::string ip,int port, int verityPort){
+        char  intent[1024] = {0};
+        sprintf(intent,"su -c \"am startservice -n com.oseasy.mmc.multiclient/.MultiClient -a com.oseasy.mmc.multiclient.OPENFUNC --es type %s --es host %s --ei port %d --ei verityPort %d\"",name.c_str(),ip.c_str(),port,verityPort);
+        system(intent);
+    }
+    static void Set(std::string name, bool value) {
+        char  intent[1024] = {0};
+        sprintf(intent,"su -c \"am startservice -n com.oseasy.mmc.multiclient/.MultiClient -a com.oseasy.mmc.multiclient.SETFUNC --es type %s --ei value %d\"",name.c_str(),(int)value);
+        system(intent);
+    }
+
+    static void Log(std::string message){
+        char  intent[1024] = {0};
+        sprintf(intent,"su -c \"am startservice -n com.oseasy.mmc.multiclient/.MultiClient -a com.oseasy.mmc.multiclient.LOG --es message %s\"",message.c_str());
         system(intent);
     }
 };
