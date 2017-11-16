@@ -31,6 +31,8 @@ public class MultiClient extends Service {
     public final static String LOG = "com.oseasy.mmc.multiclient.LOG";
     public boolean      inBroadCast = false;
     public boolean      type = false;
+    public boolean      firstAuto = true;
+    public Thread  thread = null;
     static {
         System.loadLibrary("Core");
     }
@@ -57,30 +59,6 @@ public class MultiClient extends Service {
                     Start(teacherIp,filterIp,mac);
                 }
             }).start();
-
-            if (this.type){
-                Thread  thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        while (true){
-                            try {
-                                Thread.sleep(3000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-
-                            if (inBroadCast){
-                                if (!checkPackage(getApplicationContext(), "com.oseasy.mmc.multirender")) {
-                                    LogToFile.v(TAG, "KillSelf");
-                                    android.os.Process.killProcess(android.os.Process.myPid());
-                                }
-                            }
-                        }
-                    }
-                });
-                thread.start();
-            }
         }else if (actionType.equals(STOPFUNC)){
             Bundle bundle = intent.getExtras();
             final String type = bundle.getString("type");
@@ -143,7 +121,7 @@ public class MultiClient extends Service {
         LogToFile.v(TAG,String.format("Excute Func:%s,Params:%s:%d",name,ip,port));
         switch (name){
             case "screen": {
-                if (!type){
+             //   if (!type){
                     if (!checkPackage(getApplicationContext(), "com.oseasy.mmc.multirender")){
                         Intent intent = new Intent();
                         intent.setAction("com.oseasy.mmc.multirender.OPEN");
@@ -164,7 +142,30 @@ public class MultiClient extends Service {
                         intent.setAction("com.oseasy.mmc.multirender.ON");
                         startService(intent);
                     }
-                }else {
+
+                if (type){
+                    if (thread == null){
+                        thread = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                while (true){
+                                    try {
+                                        Thread.sleep(3000);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    if (!checkPackage(getApplicationContext(), "com.oseasy.mmc.multirender")) {
+                                        LogToFile.v(TAG, "KillSelf");
+                                        android.os.Process.killProcess(android.os.Process.myPid());
+                                    }
+                                }
+                            }
+                        });
+                        thread.start();
+                    }
+                }
+  /*              }else {
                     if (!checkPackage(getApplicationContext(), "com.oseasy.mmc.multirender")) {
                         Intent intent = new Intent();
                         intent.setAction("com.oseasy.mmc.multirender.OPEN");
@@ -175,7 +176,7 @@ public class MultiClient extends Service {
                         startActivity(intent);
                     }
                     inBroadCast = true;
-                }
+                }*/
                 break;
             }
             case "mac": {
@@ -217,22 +218,22 @@ public class MultiClient extends Service {
         LogToFile.v(TAG,String.format("Stop Func:%s",name));
         switch (name){
             case "screen": {
-                if (!type){
+//                if (!type){
                     if (checkPackage(getApplicationContext(), "com.oseasy.mmc.multirender")){
                         Intent intent = new Intent();
                         intent.setComponent(new ComponentName("com.oseasy.mmc.multirender","com.oseasy.mmc.multirender.MyIntentService"));
                         intent.setAction("com.oseasy.mmc.multirender.OFF");
                         startService(intent);
-                    }
-                }else {
+                   }
+/*                }else {
                     if (checkPackage(getApplicationContext(),"com.oseasy.mmc.multirender")){
-                        inBroadCast = false;
                         Intent intent = new Intent();
                         intent.setComponent(new ComponentName("com.oseasy.mmc.multirender","com.oseasy.mmc.multirender.MyIntentService"));
                         intent.setAction("com.oseasy.mmc.multirender.CLOSE");
                         startService(intent);
+                        inBroadCast = false;
                     }
-                }
+                }*/
                 break;
             }
             case "mac": {
