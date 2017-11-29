@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MultiClient.iml" filepath="$PROJECT_DIR$/MultiClient.iml" />
+      <module fileurl="file://D:\six\MultiClient\MultiClient.iml" filepath="D:\six\MultiClient\MultiClient.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://D:\six\MultiClient\app\app.iml" filepath="D:\six\MultiClient\app\app.iml" />
     </modules>
   </component>
 </project>
